@@ -1,26 +1,30 @@
 const express = require('express');
-const mysql = require('mysql');
+const mysql = require('mysql2'); // Use mysql2 instead of deprecated 'mysql'
 const app = express();
-const port = 3000;
+const port = 3000; // Define the port here
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Database connection to AWS RDS MySQL
 const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '', // ใส่รหัสผ่านของคุณที่นี่
-    database: 'mydb'
+    host: 'mysql-1.cjmu8y22aeer.us-east-1.rds.amazonaws.com', // Replace with your RDS endpoint
+    user: 'admin',          // RDS username
+    password: 'web-password', // Your RDS password
+    database: 'mysql-1',  // Your database name
+    port: 3306
 });
 
+// Connect to MySQL database
 db.connect(err => {
     if (err) {
         console.error('DB connection error:', err);
     } else {
-        console.log('Connected to DB');
+        console.log('Connected to the database');
     }
 });
 
+// Serve the main HTML page
 app.get('/', (req, res) => {
     res.send(`
         <!DOCTYPE html>
@@ -66,7 +70,7 @@ app.get('/', (req, res) => {
                     });
                     if (response.ok) {
                         alert('Student added successfully');
-                        fetchStudents(); // Refresh the student list
+                        fetchStudents();
                     } else {
                         alert('Error adding student');
                     }
@@ -78,7 +82,7 @@ app.get('/', (req, res) => {
                     });
                     if (response.ok) {
                         alert('Student deleted successfully');
-                        fetchStudents(); // Refresh the student list
+                        fetchStudents();
                     } else {
                         alert('Error deleting student');
                     }
@@ -98,7 +102,7 @@ app.get('/', (req, res) => {
                         });
                         if (response.ok) {
                             alert('Student updated successfully');
-                            fetchStudents(); // Refresh the student list
+                            fetchStudents();
                         } else {
                             alert('Error updating student');
                         }
@@ -118,17 +122,18 @@ app.get('/', (req, res) => {
             <ul id="student-list"></ul>
 
             <script>
-                fetchStudents(); // Load students on page load
+                fetchStudents(); // Load students when page loads
             </script>
         </body>
         </html>
     `);
 });
 
+// API to insert student data
 app.post('/insert', (req, res) => {
     const { student_id, first_name, last_name } = req.body;
     const query = 'INSERT INTO students (student_id, first_name, last_name) VALUES (?, ?, ?)';
-    
+
     db.query(query, [student_id, first_name, last_name], (err, result) => {
         if (err) {
             console.error('Insert error:', err);
@@ -140,9 +145,10 @@ app.post('/insert', (req, res) => {
     });
 });
 
+// API to show all students
 app.get('/show', (req, res) => {
     const query = 'SELECT * FROM students';
-    
+
     db.query(query, (err, results) => {
         if (err) {
             console.error('Select error:', err);
@@ -154,10 +160,11 @@ app.get('/show', (req, res) => {
     });
 });
 
+// API to delete student by ID
 app.delete('/delete/:student_id', (req, res) => {
     const { student_id } = req.params;
     const query = 'DELETE FROM students WHERE student_id = ?';
-    
+
     db.query(query, [student_id], (err, result) => {
         if (err) {
             console.error('Delete error:', err);
@@ -170,11 +177,12 @@ app.delete('/delete/:student_id', (req, res) => {
     });
 });
 
+// API to update student data
 app.put('/update/:student_id', (req, res) => {
     const { student_id } = req.params;
     const { first_name, last_name } = req.body;
     const query = 'UPDATE students SET first_name = ?, last_name = ? WHERE student_id = ?';
-    
+
     db.query(query, [first_name, last_name, student_id], (err, result) => {
         if (err) {
             console.error('Update error:', err);
@@ -187,6 +195,7 @@ app.put('/update/:student_id', (req, res) => {
     });
 });
 
+// Start server
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
 });
