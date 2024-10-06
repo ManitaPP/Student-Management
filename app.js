@@ -1,27 +1,40 @@
 const express = require('express');
 const mysql = require('mysql2'); // Use mysql2 instead of deprecated 'mysql'
 const app = express();
-const port = 3000; // Define the port here
+const port = 3306; // Define the port here
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Database connection to AWS RDS MySQL
+// const db = mysql.createConnection({
+//     host: 'mysql-1.cjmu8y22aeer.us-east-1.rds.amazonaws.com', // Replace with your RDS endpoint
+//     user: 'admin',          // RDS username
+//     password: 'web-password', // Your RDS password
+//     database: 'mysql-1',  // Your database name
+//     port: 3306
+// });
+
+// // Connect to MySQL database
+// db.connect(err => {
+//     if (err) {
+//         console.error('DB connection error:', err);
+//     } else {
+//         console.log('Connected to the database');
+//     }
+// });
+
 const db = mysql.createConnection({
-    host: 'mysql-1.cjmu8y22aeer.us-east-1.rds.amazonaws.com', // Replace with your RDS endpoint
-    user: 'admin',          // RDS username
-    password: 'web-password', // Your RDS password
-    database: 'mysql-1',  // Your database name
-    port: 3306
+    host: 'nuttapong-db.c3o2meyyqy48.us-east-1.rds.amazonaws.com',
+    user: 'main', // เปลี่ยนเป็น username ของคุณ
+    password: 'lab-password', // เปลี่ยนเป็น password ของคุณ
+    database: 'MYDB' // เปลี่ยนเป็นชื่อ database ของคุณ
 });
 
-// Connect to MySQL database
-db.connect(err => {
-    if (err) {
-        console.error('DB connection error:', err);
-    } else {
-        console.log('Connected to the database');
-    }
+// เชื่อมต่อกับ database
+db.connect((err) => {
+    if (err) throw err;
+    console.log('Connected to database!');
 });
 
 // Serve the main HTML page
